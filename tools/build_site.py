@@ -57,6 +57,11 @@ PAGES = [
      "Google Sheets and Excel reporting: which to choose, how to set it up, and what has been verified."),
 ]
 
+# The assessment itself: one self-contained file at the repository root, taken
+# on a Chromebook. This is the primary link on the site; everything else is
+# support material.
+TEST_APP = "Grade-7-ELA-Pre-Post.html"
+
 FORMS = [
     ("print/form-a-pre-test.html", "forms/form-a-pre-test.html", "Form A — Pre-Test",
      "Icarus adaptation · light pollution · 60 points"),
@@ -118,6 +123,18 @@ h2+.lede{margin:0 0 16px;color:var(--muted);font-size:15px}
 .card p{margin:0;font-size:13.7px;color:var(--muted);line-height:1.55}
 .card .meta{margin-top:9px;font-size:12px;color:var(--accent-2);letter-spacing:.02em}
 
+/* ---- the test itself: the one link students use ---- */
+.launch{display:block;border:1px solid var(--accent-2);border-radius:12px;padding:22px 24px;
+        background:var(--soft);box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.launch:hover{text-decoration:none;transform:translateY(-1px);
+              box-shadow:0 2px 4px rgba(16,24,40,.07),0 10px 26px rgba(16,24,40,.09)}
+.launch h3{margin:0 0 6px;font-size:20px;color:var(--ink);letter-spacing:-.01em}
+.launch p{margin:0;color:var(--muted);font-size:14.5px;max-width:56ch}
+.btn{display:inline-block;margin-top:15px;background:var(--accent-2);color:#fff;
+     border-radius:8px;padding:11px 20px;font-size:15.5px;font-weight:600;letter-spacing:.01em}
+@media (prefers-color-scheme:dark){ .btn{color:#0f1319} }
+.launch:hover .btn{filter:brightness(1.06)}
+
 /* ---- callout ---- */
 .note{border:1px solid var(--rule);border-left:3px solid var(--accent-2);border-radius:8px;
       background:var(--soft);padding:14px 16px;font-size:14.3px;color:var(--muted)}
@@ -166,7 +183,7 @@ footer p{margin:0 0 6px}
 }
 """
 
-NAV = [("index.html", "Overview")] + [(p[1], p[3]) for p in PAGES]
+NAV = [("index.html", "Overview"), (TEST_APP, "Take the test")] + [(p[1], p[3]) for p in PAGES]
 
 
 def rel(from_path: str, to_path: str) -> str:
@@ -228,6 +245,11 @@ def build() -> None:
 
     made = []
 
+    # The site's whole point is the link to the test. If the file is not here,
+    # every page ships a dead button — say so loudly rather than quietly.
+    if not (ROOT / TEST_APP).exists():
+        sys.exit(f"Missing {TEST_APP} at the repository root — the site links to it.")
+
     # --- documentation pages ---
     for src, out, label, short, _blurb in PAGES:
         src_path = ROOT / src
@@ -254,13 +276,13 @@ def build() -> None:
     mast = """<header class="mast"><div class="wrap">
 <p class="eyebrow">Georgia Milestones aligned · Grade 7</p>
 <h1>English Language Arts<br>Pre/Post Assessment</h1>
-<p>Two parallel 60-point forms, full answer keys, the state's three-trait writing rubric, and a reporting system that turns item scores into instructional groups.</p>
+<p>An online test built to look and behave like the Georgia Milestones: split passage view, item palette, flag for review, highlighter and answer eliminator, and real technology-enhanced items. Two parallel 60-point forms in one file.</p>
 <div class="chips">
+<span class="chip">Milestones-style online interface</span>
 <span class="chip">Blueprint-exact weighting</span>
 <span class="chip">Item-for-item parallel forms</span>
-<span class="chip">Peer Revision Task</span>
+<span class="chip">Auto-scored to a Google Sheet</span>
 <span class="chip">3-trait scored writing</span>
-<span class="chip">Auto-scoring &amp; growth reporting</span>
 </div>
 </div></header>"""
 
@@ -278,19 +300,30 @@ def build() -> None:
 
     body = f"""
 <section>
+  <h2>Take the test</h2>
+  <p class="lede">This is the link to give students. It opens the assessment itself.</p>
+  <a class="launch" href="{TEST_APP}">
+    <h3>Grade 7 ELA Pre/Post Assessment →</h3>
+    <p>Students choose Form&nbsp;A (pre) or Form&nbsp;B (post) on the first screen, enter their name and student ID, and begin. Work saves in the browser as they go, so a closed lid or a dropped Wi-Fi signal does not lose a test.</p>
+    <span class="btn">Open the test</span>
+  </a>
+  <p style="margin-top:14px"><span class="note" style="display:block"><strong>One file, nothing to install.</strong> It runs entirely in the browser. You can also right-click the button, save the file to a shared drive or your Google Classroom, and have students open it there — it works with no network at all, and offers a download of the results if the connection to your spreadsheet is unavailable.</span></p>
+</section>
+
+<section>
   <h2>Start here</h2>
-  <p class="lede">Four steps from booklet to instructional groups.</p>
+  <p class="lede">Four steps from test link to instructional groups.</p>
   <div class="cards steps">
-    <div class="card"><h3>1 · Print the booklets</h3><p>Open a form below and print to PDF — Letter, default margins, background graphics on.</p></div>
+    <div class="card"><h3>1 · Send the link</h3><p>Post it in Google Classroom. Chromebooks, full screen. Students pick Form&nbsp;A for the pre-test.</p></div>
     <div class="card"><h3>2 · Administer Form A</h3><p>First three weeks of school. Two 60-minute sessions. Scripts and accommodations are in the administration guide.</p></div>
-    <div class="card"><h3>3 · Score and enter</h3><p>Item-level, not totals. Enter 0 for a wrong answer — a blank means "not tested".</p></div>
+    <div class="card"><h3>3 · Score the essays</h3><p>Items 1–38 score themselves and land in your spreadsheet. You score the essay on the three-trait rubric.</p></div>
     <div class="card"><h3>4 · Read the groups</h3><p>The reporting workbook names each student's weakest reporting category and builds the groups for you.</p></div>
   </div>
 </section>
 
 <section>
-  <h2>The forms</h2>
-  <p class="lede">Item <em>n</em> on both forms shares standard, expectation, achievement level, DOK, item type, and point value. Only the passages and answer positions differ — that is what makes a pre&nbsp;→&nbsp;post difference mean growth rather than a difference in difficulty.</p>
+  <h2>The two forms</h2>
+  <p class="lede">Item <em>n</em> on both forms shares standard, expectation, achievement level, DOK, item type, and point value. Only the passages and answer positions differ — that is what makes a pre&nbsp;→&nbsp;post difference mean growth rather than a difference in difficulty. Both are inside the one test file above; these printable booklets are a paper backup only.</p>
   <div class="cards">{form_cards}</div>
   <p style="margin-top:14px"><span class="note" style="display:block"><strong>Answer keys are not published here.</strong> They live in the repository under <code>assessments/</code>, because the pre/post design depends on Form&nbsp;A's keys staying unseen until Form&nbsp;B has been administered.</span></p>
 </section>
@@ -349,15 +382,15 @@ def build() -> None:
     made.insert(0, "index.html")
 
     # --- custom 404 -------------------------------------------------------
-    nf_body = """
+    nf_body = f"""
 <section style="padding-top:8px">
   <h2>Page not found</h2>
   <p class="lede">That address doesn't match anything on this site.</p>
   <div class="cards" style="margin-top:18px">
-    <a class="card" href="index.html"><h3>Overview</h3><p>Start here — the hub with every form and guide.</p></a>
-    <a class="card" href="forms/form-a-pre-test.html"><h3>Form A — Pre-Test</h3><p>Open the booklet and print to PDF.</p></a>
-    <a class="card" href="forms/form-b-post-test.html"><h3>Form B — Post-Test</h3><p>Open the booklet and print to PDF.</p></a>
+    <a class="card" href="index.html"><h3>Overview</h3><p>Start here — the hub with the test and every guide.</p></a>
+    <a class="card" href="{TEST_APP}"><h3>Take the test</h3><p>The online assessment. Forms A and B, on a Chromebook.</p></a>
     <a class="card" href="guides/administration.html"><h3>Administration guide</h3><p>Timing, scripts, accommodations, scoring.</p></a>
+    <a class="card" href="guides/reporting-setup.html"><h3>Reporting setup</h3><p>Connecting results to your Google Sheet.</p></a>
   </div>
   <p class="lede" style="margin-top:22px">If you followed a link from somewhere else, note that addresses here are
   case-sensitive.</p>
