@@ -222,15 +222,15 @@ function buildItemAnalysis_(ss) {
 function buildGroups_(ss) {
   var sh = sheetNamed_(ss, SHEETS.groups);
   sh.setHiddenGridlines(true);
-  titleBar_(sh, 'Intervention Groups', 16);
+  titleBar_(sh, 'Intervention Groups', 16, FREEZE_GROUPS);
   subtitle_(sh, 2, 'Group rosters build themselves from the Student Report and update as scores change. ' +
-    'Green = Mastered (80%+), amber = Approaching (60–79%), red = Not Yet (below 60%).', 16);
+    'Green = Mastered (80%+), amber = Approaching (60–79%), red = Not Yet (below 60%).', 16, FREEZE_GROUPS);
 
   var REP = "'" + SHEETS.report + "'", S = SHEETS.settings;
   var NAMES = REP + '!$B$' + FIRST_ROW + ':$B$' + LAST_ROW;
   var WEAK = REP + '!$' + colA1(R_WEAK1) + '$' + FIRST_ROW + ':$' + colA1(R_WEAK1) + '$' + LAST_ROW;
 
-  sectionBar_(sh, 4, 'Whole-class picture — how many students are "Not Yet" in each category?', 16);
+  sectionBar_(sh, 4, 'Whole-class picture — how many students are "Not Yet" in each category?', 16, FREEZE_GROUPS);
   headerRow_(sh, 5, 1, ['Category', 'Not Yet', 'Approaching', 'Mastered', 'Recommendation']);
   [80, 75, 90, 75, 620].forEach(function (w, i) { sh.setColumnWidth(i + 1, w); });
 
@@ -254,7 +254,7 @@ function buildGroups_(ss) {
   });
   addRule_(sh, [sh.getRange(6, 5, CATEGORIES.length, 1)], '=LEFT($E6,11)="WHOLE CLASS"', COLORS.red, '#9C0006');
 
-  sectionBar_(sh, 14, 'Group rosters — built automatically from each student’s weakest category', 16);
+  sectionBar_(sh, 14, 'Group rosters — built automatically from each student’s weakest category', 16, FREEZE_GROUPS);
   headerRow_(sh, 15, 1, ['Group', 'n', 'Students']);
   CATEGORIES.forEach(function (c, i) {
     var r = 16 + i;
@@ -267,12 +267,12 @@ function buildGroups_(ss) {
     sh.getRange(r, 1).setFontWeight('bold');
     sh.getRange(r, 3).setWrap(true).setVerticalAlignment('top');
   });
-  sh.getRange(23, 1, 1, 16).merge().setValue(
+  noteBand_(sh, 23, 16,
     'Do not run more than three groups at once. A student appears in the group for their WEAKEST category; ' +
-    'the student table below shows the full profile, including a second group if you have capacity.')
-    .setFontSize(9).setFontStyle('italic').setFontColor(COLORS.muted).setWrap(true);
+    'the student table below shows the full profile, including a second group if you have capacity.',
+    FREEZE_GROUPS);
 
-  sectionBar_(sh, 25, 'Student-level mastery heat map', 16);
+  sectionBar_(sh, 25, 'Student-level mastery heat map', 16, FREEZE_GROUPS);
   var codes = CATEGORIES.map(function (c) { return c.code; });
   headerRow_(sh, 26, 1, ['Student ID', 'Student Name', 'Period', 'Post total', 'Achievement level',
                          'PRIMARY GROUP', 'Secondary group', 'Not Yet count'].concat(codes));
@@ -308,7 +308,7 @@ function buildGroups_(ss) {
     COLORS.red, '#9C0006');
 
   sh.setFrozenRows(26);
-  sh.setFrozenColumns(2);
+  sh.setFrozenColumns(FREEZE_GROUPS);
 }
 
 // ---- Standards Coverage ---------------------------------------------------

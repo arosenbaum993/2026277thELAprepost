@@ -244,6 +244,13 @@ for (var _i = 0; _i < 7; _i++) {
   CHG_CAT_COLS.push(colA1(R_CHG + _i));
 }
 
+// Frozen-column counts. Any full-width merged band on these sheets must be
+// split at this boundary — see bandMerge_().
+var FREEZE_ROSTER = 3;   // ID, last name, first name stay visible
+var FREEZE_ENTRY  = 2;   // ID and student name stay visible across 41 item columns
+var FREEZE_REPORT = 3;   // ID, name, period stay visible
+var FREEZE_GROUPS = 2;   // ID and student name stay visible across the heat map
+
 // ---- helpers --------------------------------------------------------------
 
 function sheetNamed_(ss, name) {
@@ -253,25 +260,56 @@ function sheetNamed_(ss, name) {
   return sh;
 }
 
-function titleBar_(sh, text, width) {
-  sh.getRange(1, 1, 1, width).merge()
-    .setValue(text)
+/**
+ * Merge a horizontal band, splitting it at the frozen-column boundary.
+ *
+ * Google rejects a frozen region containing only PART of a merged cell:
+ *   "you can't freeze columns which contain only part of a merged cell"
+ * A banner spanning A:AN on a sheet with 3 frozen columns triggers exactly
+ * that. Splitting it into A:C and D:AN keeps the frozen region whole and looks
+ * identical, because both blocks carry the same fill.
+ *
+ * Returns the full band range so formatting can be applied uniformly.
+ */
+function bandMerge_(sh, row, width, freezeAt) {
+  if (freezeAt && freezeAt > 0 && freezeAt < width) {
+    sh.getRange(row, 1, 1, freezeAt).merge();
+    sh.getRange(row, freezeAt + 1, 1, width - freezeAt).merge();
+  } else {
+    sh.getRange(row, 1, 1, width).merge();
+  }
+  return sh.getRange(row, 1, 1, width);
+}
+
+function titleBar_(sh, text, width, freezeAt) {
+  bandMerge_(sh, 1, width, freezeAt)
     .setBackground(COLORS.navy).setFontColor('#FFFFFF')
     .setFontFamily('Arial').setFontSize(14).setFontWeight('bold')
     .setVerticalAlignment('middle');
+  sh.getRange(1, 1).setValue(text);
   sh.setRowHeight(1, 34);
 }
 
-function subtitle_(sh, row, text, width) {
-  sh.getRange(row, 1, 1, width).merge()
-    .setValue(text).setFontFamily('Arial').setFontSize(9)
+function subtitle_(sh, row, text, width, freezeAt) {
+  bandMerge_(sh, row, width, freezeAt)
+    .setFontFamily('Arial').setFontSize(9)
     .setFontStyle('italic').setFontColor(COLORS.muted).setWrap(true);
+  sh.getRange(row, 1).setValue(text);
 }
 
-function sectionBar_(sh, row, text, width) {
-  sh.getRange(row, 1, 1, width).merge()
-    .setValue(text).setBackground(COLORS.light).setFontColor(COLORS.navy)
+function sectionBar_(sh, row, text, width, freezeAt) {
+  bandMerge_(sh, row, width, freezeAt)
+    .setBackground(COLORS.light).setFontColor(COLORS.navy)
     .setFontFamily('Arial').setFontSize(11).setFontWeight('bold');
+  sh.getRange(row, 1).setValue(text);
+}
+
+/** A wrapped full-width note, split at the freeze boundary. */
+function noteBand_(sh, row, width, text, freezeAt) {
+  bandMerge_(sh, row, width, freezeAt)
+    .setFontSize(9).setFontStyle('italic').setFontColor(COLORS.muted)
+    .setWrap(true).setVerticalAlignment('top');
+  sh.getRange(row, 1).setValue(text);
 }
 
 function headerRow_(sh, row, col, values) {
@@ -440,8 +478,8 @@ function buildSettings_(ss) {
 function buildRoster_(ss) {
   var sh = sheetNamed_(ss, SHEETS.roster);
   sh.setHiddenGridlines(true);
-  titleBar_(sh, 'Roster', 9);
-  subtitle_(sh, 2, 'Every yellow cell is an input. Row 6 is an example — overwrite it. Student order here fixes the row order on every other sheet.', 9);
+  titleBar_(sh, 'Roster', 9, FREEZE_ROSTER);
+  subtitle_(sh, 2, 'Every yellow cell is an input. Row 6 is an example — overwrite it. Student order here fixes the row order on every other sheet.', 9, FREEZE_ROSTER);
   sh.getRange(3, 1).setFormula('="Students on roster: "&COUNTA(C' + FIRST_ROW + ':C' + LAST_ROW + ')').setFontWeight('bold');
 
   var cols = ['Student ID', 'Last Name', 'First Name', 'Class Period', 'Form Order',
@@ -464,7 +502,7 @@ function buildRoster_(ss) {
     SpreadsheetApp.newDataValidation().requireValueInList(['Y', 'N'], true).build());
 
   sh.setFrozenRows(HDR_ROW);
-  sh.setFrozenColumns(3);
+  sh.setFrozenColumns(FREEZE_ROSTER);
 }
 
 // ---- Entry sheets ---------------------------------------------------------
@@ -472,9 +510,9 @@ function buildRoster_(ss) {
 function buildEntry_(ss, name, formLabel) {
   var sh = sheetNamed_(ss, name);
   sh.setHiddenGridlines(true);
-  titleBar_(sh, name + ' — ' + formLabel, TOTAL_COL);
+  titleBar_(sh, name + ' — ' + formLabel, TOTAL_COL, FREEZE_ENTRY);
   subtitle_(sh, 2, 'Enter POINTS EARNED per item. Enter 0 for a wrong answer — a blank means "not tested" and removes the student from the statistics. ' +
-    'Row 3 shows the reporting category; row 4 shows the maximum points.', TOTAL_COL);
+    'Row 3 shows the reporting category; row 4 shows the maximum points.', TOTAL_COL, FREEZE_ENTRY);
 
   sh.getRange(CAT_ROW, 1).setValue('Category →').setFontSize(9).setFontStyle('italic').setHorizontalAlignment('right');
   sh.getRange(MAX_ROW, 1).setValue('Max points →').setFontSize(9).setFontStyle('italic').setHorizontalAlignment('right');
@@ -524,7 +562,7 @@ function buildEntry_(ss, name, formLabel) {
     COLORS.red, '#9C0006');
 
   sh.setFrozenRows(HDR_ROW);
-  sh.setFrozenColumns(2);
+  sh.setFrozenColumns(FREEZE_ENTRY);
 }
 
 // ---- Student Report -------------------------------------------------------
@@ -532,9 +570,9 @@ function buildEntry_(ss, name, formLabel) {
 function buildStudentReport_(ss) {
   var sh = sheetNamed_(ss, SHEETS.report);
   sh.setHiddenGridlines(true);
-  titleBar_(sh, 'Student Report — individual profiles, growth, and recommended focus', R_FOCUS);
+  titleBar_(sh, 'Student Report — individual profiles, growth, and recommended focus', R_FOCUS, FREEZE_REPORT);
   subtitle_(sh, 2, 'Every cell here is computed. "NEAR CUT" means the score is within one standard error of a level boundary — for those students trust the ' +
-    'category profile and your own classroom evidence, not the level label.', R_FOCUS);
+    'category profile and your own classroom evidence, not the level label.', R_FOCUS, FREEZE_REPORT);
 
   function banner(c1, c2, text, color) {
     sh.getRange(3, c1, 1, c2 - c1 + 1).merge().setValue(text)
@@ -670,7 +708,7 @@ function buildStudentReport_(ss) {
   addRule_(sh, [sh.getRange(FIRST_ROW, R_TGT, N_STUDENTS, 1)], '=' + colA1(R_TGT) + FIRST_ROW + '="Yes"', COLORS.green);
 
   sh.setFrozenRows(HDR_ROW);
-  sh.setFrozenColumns(3);
+  sh.setFrozenColumns(FREEZE_REPORT);
 }
 
 function levelFormula_(cell) {
@@ -908,15 +946,15 @@ function buildItemAnalysis_(ss) {
 function buildGroups_(ss) {
   var sh = sheetNamed_(ss, SHEETS.groups);
   sh.setHiddenGridlines(true);
-  titleBar_(sh, 'Intervention Groups', 16);
+  titleBar_(sh, 'Intervention Groups', 16, FREEZE_GROUPS);
   subtitle_(sh, 2, 'Group rosters build themselves from the Student Report and update as scores change. ' +
-    'Green = Mastered (80%+), amber = Approaching (60–79%), red = Not Yet (below 60%).', 16);
+    'Green = Mastered (80%+), amber = Approaching (60–79%), red = Not Yet (below 60%).', 16, FREEZE_GROUPS);
 
   var REP = "'" + SHEETS.report + "'", S = SHEETS.settings;
   var NAMES = REP + '!$B$' + FIRST_ROW + ':$B$' + LAST_ROW;
   var WEAK = REP + '!$' + colA1(R_WEAK1) + '$' + FIRST_ROW + ':$' + colA1(R_WEAK1) + '$' + LAST_ROW;
 
-  sectionBar_(sh, 4, 'Whole-class picture — how many students are "Not Yet" in each category?', 16);
+  sectionBar_(sh, 4, 'Whole-class picture — how many students are "Not Yet" in each category?', 16, FREEZE_GROUPS);
   headerRow_(sh, 5, 1, ['Category', 'Not Yet', 'Approaching', 'Mastered', 'Recommendation']);
   [80, 75, 90, 75, 620].forEach(function (w, i) { sh.setColumnWidth(i + 1, w); });
 
@@ -940,7 +978,7 @@ function buildGroups_(ss) {
   });
   addRule_(sh, [sh.getRange(6, 5, CATEGORIES.length, 1)], '=LEFT($E6,11)="WHOLE CLASS"', COLORS.red, '#9C0006');
 
-  sectionBar_(sh, 14, 'Group rosters — built automatically from each student’s weakest category', 16);
+  sectionBar_(sh, 14, 'Group rosters — built automatically from each student’s weakest category', 16, FREEZE_GROUPS);
   headerRow_(sh, 15, 1, ['Group', 'n', 'Students']);
   CATEGORIES.forEach(function (c, i) {
     var r = 16 + i;
@@ -953,12 +991,12 @@ function buildGroups_(ss) {
     sh.getRange(r, 1).setFontWeight('bold');
     sh.getRange(r, 3).setWrap(true).setVerticalAlignment('top');
   });
-  sh.getRange(23, 1, 1, 16).merge().setValue(
+  noteBand_(sh, 23, 16,
     'Do not run more than three groups at once. A student appears in the group for their WEAKEST category; ' +
-    'the student table below shows the full profile, including a second group if you have capacity.')
-    .setFontSize(9).setFontStyle('italic').setFontColor(COLORS.muted).setWrap(true);
+    'the student table below shows the full profile, including a second group if you have capacity.',
+    FREEZE_GROUPS);
 
-  sectionBar_(sh, 25, 'Student-level mastery heat map', 16);
+  sectionBar_(sh, 25, 'Student-level mastery heat map', 16, FREEZE_GROUPS);
   var codes = CATEGORIES.map(function (c) { return c.code; });
   headerRow_(sh, 26, 1, ['Student ID', 'Student Name', 'Period', 'Post total', 'Achievement level',
                          'PRIMARY GROUP', 'Secondary group', 'Not Yet count'].concat(codes));
@@ -994,7 +1032,7 @@ function buildGroups_(ss) {
     COLORS.red, '#9C0006');
 
   sh.setFrozenRows(26);
-  sh.setFrozenColumns(2);
+  sh.setFrozenColumns(FREEZE_GROUPS);
 }
 
 // ---- Standards Coverage ---------------------------------------------------

@@ -124,6 +124,7 @@ Run `ELA Reporting ▸ Checks ▸ Run scoring self-test` any time. It checks 33 
 
 Before this was committed, these further checks were run outside Apps Script:
 
+- **The whole build is simulated offline.** `tools/simulate_apps_script_build.js` runs `buildAll()` against a mock of the Sheets API, recording every merge, freeze, and formula write, then asserts the invariants Google enforces at runtime — no merged band split by a frozen row or column, no overlapping merges, no malformed formula arrays. Run it with `node tools/simulate_apps_script_build.js` after any edit to a build function.
 - All seven `.gs` files, and the all-in-one bundle, parse as valid JavaScript.
 - The bundle was loaded and executed end to end: all globals resolve in concatenation order, `onOpen()` builds its menu, and the self-test passes **from the bundle** — which is what proves the file order is right.
 - All 37 top-level functions are declared exactly once in the bundle; concatenation introduced no duplicate or shadowed declarations.
@@ -133,7 +134,15 @@ Before this was committed, these further checks were run outside Apps Script:
 
 The formula logic itself is the same logic verified cell by cell against independently computed values in the Excel build (`reporting/verify_workbook.py`).
 
-**Not verified:** the script has not been executed inside Google's runtime from here — no Google account is available in this environment. Expect to click through the authorization screen on first run, and if a `setFormulas` call ever errors on a locale that uses semicolons as argument separators, that's the one thing to look at first.
+**Not verified:** the script has not been executed inside Google's real runtime from here — no Google account is available in this environment. Expect to click through the authorization screen on first run, and if a `setFormulas` call ever errors on a locale that uses semicolons as argument separators, that's the first thing to look at.
+
+### Known issue, fixed
+
+An earlier version failed on `buildAll()` with:
+
+> Sorry, you can't freeze columns which contain only part of a merged cell.
+
+Four sheets freeze columns so student names stay visible while you scroll (Roster, both entry sheets, Student Report, Intervention Groups), and each had a full-width merged title bar running straight through the freeze boundary — 14 conflicts in total. Banners are now split at that boundary by `bandMerge_()`, which looks identical because both blocks carry the same fill. The simulation harness above was written to reproduce the failure offline and now guards against it.
 
 ---
 
