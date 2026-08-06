@@ -51,6 +51,18 @@ h2+.lede{margin:0 0 16px;color:var(--muted);font-size:15px}
 .card p{margin:0;font-size:13.7px;color:var(--muted);line-height:1.55}
 .card .meta{margin-top:9px;font-size:12px;color:var(--accent-2);letter-spacing:.02em}
 
+/* ---- the test itself: the one link students use ---- */
+.launch{display:block;border:1px solid var(--accent-2);border-radius:12px;padding:22px 24px;
+        background:var(--soft);box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.launch:hover{text-decoration:none;transform:translateY(-1px);
+              box-shadow:0 2px 4px rgba(16,24,40,.07),0 10px 26px rgba(16,24,40,.09)}
+.launch h3{margin:0 0 6px;font-size:20px;color:var(--ink);letter-spacing:-.01em}
+.launch p{margin:0;color:var(--muted);font-size:14.5px;max-width:56ch}
+.btn{display:inline-block;margin-top:15px;background:var(--accent-2);color:#fff;
+     border-radius:8px;padding:11px 20px;font-size:15.5px;font-weight:600;letter-spacing:.01em}
+@media (prefers-color-scheme:dark){ .btn{color:#0f1319} }
+.launch:hover .btn{filter:brightness(1.06)}
+
 /* ---- callout ---- */
 .note{border:1px solid var(--rule);border-left:3px solid var(--accent-2);border-radius:8px;
       background:var(--soft);padding:14px 16px;font-size:14.3px;color:var(--muted)}
