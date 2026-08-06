@@ -25,6 +25,23 @@ Built against five source documents, treated as the sole authority for content, 
 
 ---
 
+## Website
+
+The project is published as a static site for GitHub Pages, built to the repository root so Pages can serve it from **main / (root)**:
+
+```bash
+pip install markdown
+python tools/build_site.py     # regenerates index.html, guides/, forms/, assets/
+```
+
+`index.html` is a teacher-facing hub — start-here steps, both booklets, test structure, blueprint weights, and every guide. `guides/` holds the rendered documentation and `forms/` the printable booklets. `.nojekyll` tells Pages to serve the files as they are.
+
+**Answer keys are deliberately excluded from the site.** They stay in `assessments/` in the repository, because the pre/post design depends on Form A's keys staying unseen until Form B is administered. To publish them anyway, add them to `PAGES` in `tools/build_site.py`.
+
+Re-run the builder after editing any Markdown, or the site and the sources drift apart.
+
+---
+
 ## Quick start
 
 **1. Print the booklets.**
