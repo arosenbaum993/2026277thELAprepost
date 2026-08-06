@@ -67,6 +67,18 @@ It checks totals, achievement-level placement, all seven category percentages ag
 
 > **Note on cached values.** The workbook ships without cached formula results — Excel, LibreOffice, and Google Sheets all compute them on open, so this is invisible in normal use. It only matters if you read the file programmatically (e.g. with `pandas`), where formula cells will read as empty until the file has been opened and saved by a spreadsheet application once.
 
+### Google Sheets version
+
+`google-apps-script/` holds a Google-native build with the same categories, cut scores, and statistics — plus three things the spreadsheet alone can't do:
+
+- **Auto-scoring from a Google Form answer sheet**, applying the exact partial-credit rules from the paper keys (Forms' built-in quiz grading can't — it scores checkbox items all-or-nothing, which would zero every student who got one of two right on a "select TWO" item)
+- **Intervention group rosters that build themselves** and update as scores change
+- **One-click printable student profiles** as a Google Doc, in language a student or caregiver can read
+
+Setup takes about ten minutes; `google-apps-script/README.md` has the steps. If you're testing on paper and just want the reports, uploading the `.xlsx` to Drive works too — that README names the four cells to check after import.
+
+The Form deliberately contains **no passages** — students read the printed booklet and use the Form as a bubble sheet. Scrolling passages inside a Form would depress reading scores for reasons unrelated to reading, and Form A needs to stay secure until Form B is given.
+
 ---
 
 ## Test structure
@@ -162,6 +174,14 @@ rubrics/
 reporting/
   build_reporting_workbook.py                    regenerates the workbook
   GA7-ELA-PrePost-Reporting-Workbook.xlsx        the teacher data tool
+google-apps-script/
+  README.md                                      setup, and which path to take
+  Config.gs                                      item spec, answer keys, categories, cut scores
+  BuildSheets.gs · BuildSheets2.gs               builds all ten sheets natively in Google Sheets
+  Scoring.gs                                     auto-scoring engine + 33-assertion self-test
+  FormBuilder.gs                                 generates the Google Form answer sheet
+  Reports.gs                                     one-page student profiles as a Google Doc
+  Menu.gs · appsscript.json                      custom menu and manifest
 tools/
   build_print_booklets.py                        Markdown → print-ready HTML booklets
 print/
