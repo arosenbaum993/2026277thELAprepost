@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reporting setup · Grade 7 ELA Pre/Post</title>
+<meta name="description" content="A blueprint-faithful Grade 7 ELA pre/post assessment aligned to Georgia's K-12 ELA Standards and the Georgia Milestones Grade 7 ELA blueprint.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<nav class="nav"><div class="wrap"><a href="../index.html">Overview</a><a href="../guides/design-notes.html">Design</a><a href="../guides/blueprint-matrix.html">Blueprint</a><a href="../guides/administration.html">Administering</a><a href="../guides/writing-rubric.html">Rubric</a><a href="../guides/student-checklist.html">Student tools</a><a href="../guides/reporting-setup.html" class="on">Reporting</a></div></nav>
+<main><div class="wrap">
+<a class="backlink" href="../index.html">← Back to overview</a><article class="doc"><h1>Google Sheets / Apps Script Reporting</h1>
+<p>A Google-native build of the reporting system. Same seven reporting categories, same cut scores, same growth statistics as the Excel workbook — plus three things the spreadsheet alone cannot do:</p>
+<ul>
+<li><strong>Auto-scoring</strong> from a Google Form answer sheet, with the exact partial-credit rules from the paper answer keys</li>
+<li><strong>Group rosters that build themselves</strong> and update as scores change</li>
+<li><strong>Printable one-page student profiles</strong> generated as a Google Doc, written in language a student or caregiver can read</li>
+</ul>
+<hr />
+<h2>Which path should you take?</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Upload the <code>.xlsx</code> to Drive</th>
+<th>Apps Script build</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Setup time</td>
+<td>2 minutes</td>
+<td>~10 minutes, once</td>
+</tr>
+<tr>
+<td>Students test on paper</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Students answer on Chromebooks</td>
+<td>❌</td>
+<td>✅ auto-scored on submit</td>
+</tr>
+<tr>
+<td>You hand-enter 38 item scores per student</td>
+<td>✅ (~25 min/class)</td>
+<td>Only the 3 essay trait scores</td>
+</tr>
+<tr>
+<td>Intervention groups</td>
+<td>Sort a column yourself</td>
+<td>Rosters write themselves</td>
+</tr>
+<tr>
+<td>Student handouts</td>
+<td>Build your own</td>
+<td>One click → Google Doc</td>
+</tr>
+<tr>
+<td>Shared with a co-teacher</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Take the upload path if</strong> you're testing on paper this year and just want the reports. It genuinely works — see the note at the bottom about the four cells to check.</p>
+<p><strong>Take the Apps Script path if</strong> you have Chromebooks and want the item entry to disappear. Hand-entering 38 scores × 130 students is about two hours per administration; the Form removes almost all of it.</p>
+<p>You can start with the upload and move to Apps Script later without losing anything.</p>
+<hr />
+<h2>Setup (Apps Script path)</h2>
+<h3>👉 The easy way — one file</h3>
+<p><strong>Use <a href="ELA-Reporting-ALL-IN-ONE.gs"><code>ELA-Reporting-ALL-IN-ONE.gs</code></a>.</strong> It is all seven script files concatenated into one, so there is a single thing to paste.</p>
+<p><strong>1. Create the spreadsheet.</strong> In Drive: <strong>New ▸ Google Sheets</strong>. Name it something like <code>Grade 7 ELA Pre-Post Reporting</code>.</p>
+<p><strong>2. Open the script editor.</strong> <strong>Extensions ▸ Apps Script</strong>.</p>
+<p><strong>3. Paste the script.</strong> Select everything in the default <code>Code.gs</code> and delete it, then paste the entire contents of <code>ELA-Reporting-ALL-IN-ONE.gs</code> in its place. Save (💾).</p>
+<p><strong>4. Add the manifest.</strong> Click ⚙️ <strong>Project Settings</strong> and tick <em>Show "appsscript.json" manifest file in editor</em>. Go back to the editor, open <strong>appsscript.json</strong>, and replace its contents with the file of that name in this folder.</p>
+<blockquote>
+<p><code>appsscript.json</code> is JSON, not script — it just declares which permissions the project needs. It cannot go in the same file as the code.</p>
+</blockquote>
+<p><strong>5. Save, then reload the spreadsheet tab.</strong> An <strong>ELA Reporting</strong> menu appears next to Help.</p>
+<p><strong>6. Run <code>ELA Reporting ▸ 1. Set up workbook</code>.</strong></p>
+<p>Google asks you to authorize on first run. If you see an <strong>unverified app</strong> screen, click <em>Advanced ▸ Go to (project name)</em> — it is your own script, and the permissions are limited to this spreadsheet, Google Forms, and Google Docs.</p>
+<p>Ten sheets appear. Start on <strong>START HERE</strong>.</p>
+<p><strong>7. Optional sanity check:</strong> <code>ELA Reporting ▸ Checks ▸ Run scoring self-test</code>. It should report 33 passed, 0 failed.</p>
+<h3>The modular way</h3>
+<p>If you'd rather keep the code in separate files — easier to edit later — click <strong>+ ▸ Script</strong> for each one and name it exactly as shown, then delete the default <code>Code.gs</code>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Create a file named</th>
+<th>Paste from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Config</code></td>
+<td><code>Config.gs</code></td>
+</tr>
+<tr>
+<td><code>BuildSheets</code></td>
+<td><code>BuildSheets.gs</code></td>
+</tr>
+<tr>
+<td><code>BuildSheets2</code></td>
+<td><code>BuildSheets2.gs</code></td>
+</tr>
+<tr>
+<td><code>Scoring</code></td>
+<td><code>Scoring.gs</code></td>
+</tr>
+<tr>
+<td><code>FormBuilder</code></td>
+<td><code>FormBuilder.gs</code></td>
+</tr>
+<tr>
+<td><code>Reports</code></td>
+<td><code>Reports.gs</code></td>
+</tr>
+<tr>
+<td><code>Menu</code></td>
+<td><code>Menu.gs</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>File order matters.</strong> <code>Config</code> must sit first in the file list — Apps Script evaluates files in order, and the others read values it defines. Drag it to the top if it isn't. The all-in-one file has this order baked in, which is the main reason to prefer it.</p>
+<p>Then continue from step 4 above.</p>
+<blockquote>
+<p>If you edit any individual <code>.gs</code> file, regenerate the bundle with <code>python tools/build_apps_script_bundle.py</code> so the two never drift apart.</p>
+</blockquote>
+<hr />
+<h2>Using it</h2>
+<h3>Paper testing</h3>
+<ol>
+<li>Fill in the <strong>Roster</strong>.</li>
+<li>Administer Form A from the printed booklet.</li>
+<li>Enter item scores on <strong>Pre-Test Entry</strong> — 0 for a wrong answer, never a blank.</li>
+<li>Enter the three essay trait scores in <code>Q39_T1</code>, <code>Q39_T2</code>, <code>Q39_T3</code>.</li>
+<li>Read <strong>Student Report</strong>, <strong>Class Dashboard</strong>, <strong>Intervention Groups</strong>.</li>
+</ol>
+<h3>Chromebook testing (auto-scored)</h3>
+<ol>
+<li>Fill in the <strong>Roster</strong> — <strong>Student ID is what matching runs on</strong>, so it must be exactly what students will type.</li>
+<li><code>ELA Reporting ▸ 2. Answer-sheet Forms ▸ Create Form A</code>. You get a student link.</li>
+<li><strong>Students still need the printed booklet.</strong> The Form holds no passages and no answer choices — it's a bubble sheet. See "Why no passages in the Form?" below.</li>
+<li>Students read the booklet and record answers in the Form.</li>
+<li>Responses score automatically on submit. If a trigger misses, run <code>ELA Reporting ▸ 3. Score Form responses now</code>.</li>
+<li><strong>Enter the three essay trait scores by hand.</strong> The essay is never auto-scored.</li>
+</ol>
+<h3>Student handouts</h3>
+<p><code>ELA Reporting ▸ 4. Generate student reports</code> → a Google Doc with one page per student: overall level, growth in plain language, a skill-by-skill table, and the two areas being worked on next. Print it and hand it out, or share it for conferences.</p>
+<p>You'll be asked for a class period; leave it blank for everyone.</p>
+<hr />
+<h2>Why no passages in the Form?</h2>
+<p>Two reasons, both about validity rather than convenience:</p>
+<ol>
+<li><strong>Scrolling 1,500 words of passage inside a Google Form, then scrolling back to each item, is a materially worse reading experience than a booklet.</strong> It would depress reading scores for reasons that have nothing to do with reading ability — and if it depressed them at pre-test only, it would manufacture false growth.</li>
+<li><strong>Form A has to stay secure until Form B is administered.</strong> Putting the items in a student-accessible document works against that.</li>
+</ol>
+<p>The Form also collects raw responses rather than using Google Forms' built-in quiz grading. Forms scores checkbox items all-or-nothing, which would give zero to every student who got one of the two right on a "select TWO" item. All scoring happens in <code>Scoring.gs</code>, where the partial-credit rules match the paper answer keys exactly.</p>
+<hr />
+<h2>What's been verified</h2>
+<p>Run <code>ELA Reporting ▸ Checks ▸ Run scoring self-test</code> any time. It checks 33 assertions:</p>
+<ul>
+<li>every partial-credit rule (selected response, two-part, select TWO including the three-or-more-selections case, and the four-cell match)</li>
+<li>that the seven category point totals still equal the blueprint values (6 / 16 / 6 / 6 / 8 / 10 / 8) and sum to 60</li>
+<li>that both answer keys are complete, correctly shaped for each item type, and share no key letter on any item</li>
+</ul>
+<p>Before this was committed, these further checks were run outside Apps Script:</p>
+<ul>
+<li><strong>The whole build is simulated offline.</strong> <code>tools/simulate_apps_script_build.js</code> runs <code>buildAll()</code> against a mock of the Sheets API, recording every merge, freeze, and formula write, then asserts the invariants Google enforces at runtime — no merged band split by a frozen row or column, no overlapping merges, no malformed formula arrays. Run it with <code>node tools/simulate_apps_script_build.js</code> after any edit to a build function.</li>
+<li>All seven <code>.gs</code> files, and the all-in-one bundle, parse as valid JavaScript.</li>
+<li>The bundle was loaded and executed end to end: all globals resolve in concatenation order, <code>onOpen()</code> builds its menu, and the self-test passes <strong>from the bundle</strong> — which is what proves the file order is right.</li>
+<li>All 37 top-level functions are declared exactly once in the bundle; concatenation introduced no duplicate or shadowed declarations.</li>
+<li>Every menu item points at a function that exists.</li>
+<li>Every key and point value in <code>Config.gs</code> was compared against the published <code>Form-A-Answer-Key.md</code> and <code>Form-B-Answer-Key.md</code> — all 76 keys match.</li>
+<li>The item spec in <code>Config.gs</code> was compared against <code>reporting/build_reporting_workbook.py</code> — label, max points, category, and DOK agree on all 41 columns, so the Excel and Sheets paths cannot drift apart.</li>
+</ul>
+<p>The formula logic itself is the same logic verified cell by cell against independently computed values in the Excel build (<code>reporting/verify_workbook.py</code>).</p>
+<p><strong>Not verified:</strong> the script has not been executed inside Google's real runtime from here — no Google account is available in this environment. Expect to click through the authorization screen on first run, and if a <code>setFormulas</code> call ever errors on a locale that uses semicolons as argument separators, that's the first thing to look at.</p>
+<h3>Known issue, fixed</h3>
+<p>An earlier version failed on <code>buildAll()</code> with:</p>
+<blockquote>
+<p>Sorry, you can't freeze columns which contain only part of a merged cell.</p>
+</blockquote>
+<p>Four sheets freeze columns so student names stay visible while you scroll (Roster, both entry sheets, Student Report, Intervention Groups), and each had a full-width merged title bar running straight through the freeze boundary — 14 conflicts in total. Banners are now split at that boundary by <code>bandMerge_()</code>, which looks identical because both blocks carry the same fill. The simulation harness above was written to reproduce the failure offline and now guards against it.</p>
+<hr />
+<h2>Editing it later</h2>
+<p><strong>Changing cut scores or thresholds:</strong> don't touch the script. Edit the yellow cells on the <strong>Settings</strong> sheet.</p>
+<p><strong>Changing an item's category or points:</strong> edit <code>ITEMS</code> in <code>Config.gs</code>, and make the same change in <code>docs/02-Blueprint-Alignment-Matrix.md</code> and <code>reporting/build_reporting_workbook.py</code>, or the three will disagree. Then re-run <strong>Set up workbook</strong> and re-run the self-test.</p>
+<p><strong>Roster larger than 150:</strong> change <code>N_STUDENTS</code> at the top of <code>Config.gs</code> and re-run <strong>Set up workbook</strong>.</p>
+<blockquote>
+<p>⚠️ <strong>Set up workbook rebuilds all ten sheets and erases entered scores.</strong> It asks first. If you have live data, duplicate the spreadsheet before running it.</p>
+</blockquote>
+<hr />
+<h2>If you take the upload path instead</h2>
+<p>Upload <code>reporting/GA7-ELA-PrePost-Reporting-Workbook.xlsx</code> to Drive and open it with Google Sheets. Almost everything converts cleanly — <code>SUMIF</code>, <code>COUNTIFS</code>, <code>AVERAGEIFS</code>, <code>INDEX</code>/<code>MATCH</code>, <code>VARP</code>, and <code>CORREL</code> all behave identically.</p>
+<p><strong>Check these four cells afterward.</strong> They use <code>MINIFS</code> and <code>MAXIFS</code>, which are written with an Excel-internal <code>_xlfn.</code> prefix that Sheets may not strip on import:</p>
+<ul>
+<li><code>Class Dashboard!B12</code> and <code>B13</code> (lowest / highest pre-test score)</li>
+<li><code>Class Dashboard!C12</code> and <code>C13</code> (lowest / highest post-test score)</li>
+</ul>
+<p>If any shows <code>#NAME?</code>, delete the <code>_xlfn.</code> from the formula — <code>=IFERROR(MINIFS(...))</code> works natively in Sheets. Nothing else on the sheet depends on those four cells, so the rest of your reports are correct either way.</p></article>
+</div></main>
+<footer><div class="wrap">
+<p><strong>Grade 7 English Language Arts — Pre/Post Assessment.</strong> Aligned to Georgia's K–12 ELA Standards (Grade 7, May 2023), the Georgia Milestones Grade 7 ELA Assessment Blueprint (August 2025), the draft Grade 7 Achievement Level Descriptors (October 2025), the Georgia Milestones Grade 7 Eight-Point Three-Trait Writing Rubric (August 2026), and the Grade 7 Classroom Peer Revision Guidance (February 2026).</p>
+<p>All passages are original works written for this assessment. Achievement levels are set by content review, not by a state standard-setting panel, and do not predict a Georgia Milestones score.</p>
+</div></footer>
+</body>
+</html>
