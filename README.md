@@ -75,7 +75,7 @@ It checks totals, achievement-level placement, all seven category percentages ag
 - **Intervention group rosters that build themselves** and update as scores change
 - **One-click printable student profiles** as a Google Doc, in language a student or caregiver can read
 
-Setup takes about ten minutes; `google-apps-script/README.md` has the steps. If you're testing on paper and just want the reports, uploading the `.xlsx` to Drive works too — that README names the four cells to check after import.
+Setup is one paste: `google-apps-script/ELA-Reporting-ALL-IN-ONE.gs` bundles all seven script files into one, so there's a single thing to copy into Apps Script. Steps are in `google-apps-script/README.md`. If you're testing on paper and just want the reports, uploading the `.xlsx` to Drive works too — that README names the four cells to check after import.
 
 The Form deliberately contains **no passages** — students read the printed booklet and use the Form as a bubble sheet. Scrolling passages inside a Form would depress reading scores for reasons unrelated to reading, and Form A needs to stay secure until Form B is given.
 
@@ -176,6 +176,7 @@ reporting/
   GA7-ELA-PrePost-Reporting-Workbook.xlsx        the teacher data tool
 google-apps-script/
   README.md                                      setup, and which path to take
+  ELA-Reporting-ALL-IN-ONE.gs                    ← paste THIS one file into Apps Script
   Config.gs                                      item spec, answer keys, categories, cut scores
   BuildSheets.gs · BuildSheets2.gs               builds all ten sheets natively in Google Sheets
   Scoring.gs                                     auto-scoring engine + 33-assertion self-test
@@ -184,6 +185,7 @@ google-apps-script/
   Menu.gs · appsscript.json                      custom menu and manifest
 tools/
   build_print_booklets.py                        Markdown → print-ready HTML booklets
+  build_apps_script_bundle.py                    regenerates the all-in-one .gs bundle
 print/
   form-a-pre-test.html · form-b-post-test.html   generated; print to PDF
 ```

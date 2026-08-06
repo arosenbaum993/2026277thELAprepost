@@ -30,11 +30,33 @@ You can start with the upload and move to Apps Script later without losing anyth
 
 ## Setup (Apps Script path)
 
+### 👉 The easy way — one file
+
+**Use [`ELA-Reporting-ALL-IN-ONE.gs`](ELA-Reporting-ALL-IN-ONE.gs).** It is all seven script files concatenated into one, so there is a single thing to paste.
+
 **1. Create the spreadsheet.** In Drive: **New ▸ Google Sheets**. Name it something like `Grade 7 ELA Pre-Post Reporting`.
 
 **2. Open the script editor.** **Extensions ▸ Apps Script**.
 
-**3. Add the files.** For each `.gs` file in this folder, click **+ ▸ Script**, name it exactly as shown (without the `.gs`), and paste the contents:
+**3. Paste the script.** Select everything in the default `Code.gs` and delete it, then paste the entire contents of `ELA-Reporting-ALL-IN-ONE.gs` in its place. Save (💾).
+
+**4. Add the manifest.** Click ⚙️ **Project Settings** and tick *Show "appsscript.json" manifest file in editor*. Go back to the editor, open **appsscript.json**, and replace its contents with the file of that name in this folder.
+
+> `appsscript.json` is JSON, not script — it just declares which permissions the project needs. It cannot go in the same file as the code.
+
+**5. Save, then reload the spreadsheet tab.** An **ELA Reporting** menu appears next to Help.
+
+**6. Run `ELA Reporting ▸ 1. Set up workbook`.**
+
+Google asks you to authorize on first run. If you see an **unverified app** screen, click *Advanced ▸ Go to (project name)* — it is your own script, and the permissions are limited to this spreadsheet, Google Forms, and Google Docs.
+
+Ten sheets appear. Start on **START HERE**.
+
+**7. Optional sanity check:** `ELA Reporting ▸ Checks ▸ Run scoring self-test`. It should report 33 passed, 0 failed.
+
+### The modular way
+
+If you'd rather keep the code in separate files — easier to edit later — click **+ ▸ Script** for each one and name it exactly as shown, then delete the default `Code.gs`:
 
 | Create a file named | Paste from |
 |---|---|
@@ -46,15 +68,11 @@ You can start with the upload and move to Apps Script later without losing anyth
 | `Reports` | `Reports.gs` |
 | `Menu` | `Menu.gs` |
 
-Delete the default `Code.gs` when you're done.
+**File order matters.** `Config` must sit first in the file list — Apps Script evaluates files in order, and the others read values it defines. Drag it to the top if it isn't. The all-in-one file has this order baked in, which is the main reason to prefer it.
 
-**4. Set the manifest.** Click the ⚙️ **Project Settings** and tick *Show "appsscript.json" manifest file in editor*. Open `appsscript.json` and replace its contents with the one in this folder. (This just declares the permissions the script needs — it will not ask for anything beyond this spreadsheet, Forms, and Docs.)
+Then continue from step 4 above.
 
-**5. Save, then reload the spreadsheet tab.** An **ELA Reporting** menu appears.
-
-**6. Run `ELA Reporting ▸ 1. Set up workbook`.** Google will ask you to authorize on first run — that's expected. Click through *Advanced ▸ Go to (project name)* if you see the unverified-app screen; it's your own script, and the scopes are limited to this spreadsheet, Forms, and Docs.
-
-Ten sheets appear. Start on **START HERE**.
+> If you edit any individual `.gs` file, regenerate the bundle with `python tools/build_apps_script_bundle.py` so the two never drift apart.
 
 ---
 
@@ -104,9 +122,12 @@ Run `ELA Reporting ▸ Checks ▸ Run scoring self-test` any time. It checks 33 
 - that the seven category point totals still equal the blueprint values (6 / 16 / 6 / 6 / 8 / 10 / 8) and sum to 60
 - that both answer keys are complete, correctly shaped for each item type, and share no key letter on any item
 
-Before this was committed, three further checks were run outside Apps Script:
+Before this was committed, these further checks were run outside Apps Script:
 
-- All seven `.gs` files parse as valid JavaScript.
+- All seven `.gs` files, and the all-in-one bundle, parse as valid JavaScript.
+- The bundle was loaded and executed end to end: all globals resolve in concatenation order, `onOpen()` builds its menu, and the self-test passes **from the bundle** — which is what proves the file order is right.
+- All 37 top-level functions are declared exactly once in the bundle; concatenation introduced no duplicate or shadowed declarations.
+- Every menu item points at a function that exists.
 - Every key and point value in `Config.gs` was compared against the published `Form-A-Answer-Key.md` and `Form-B-Answer-Key.md` — all 76 keys match.
 - The item spec in `Config.gs` was compared against `reporting/build_reporting_workbook.py` — label, max points, category, and DOK agree on all 41 columns, so the Excel and Sheets paths cannot drift apart.
 
