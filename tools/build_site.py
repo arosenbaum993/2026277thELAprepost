@@ -348,6 +348,31 @@ def build() -> None:
         shell("index.html", "Grade 7 ELA Pre/Post Assessment", body, mast), encoding="utf-8")
     made.insert(0, "index.html")
 
+    # --- custom 404 -------------------------------------------------------
+    nf_body = """
+<section style="padding-top:8px">
+  <h2>Page not found</h2>
+  <p class="lede">That address doesn't match anything on this site.</p>
+  <div class="cards" style="margin-top:18px">
+    <a class="card" href="index.html"><h3>Overview</h3><p>Start here — the hub with every form and guide.</p></a>
+    <a class="card" href="forms/form-a-pre-test.html"><h3>Form A — Pre-Test</h3><p>Open the booklet and print to PDF.</p></a>
+    <a class="card" href="forms/form-b-post-test.html"><h3>Form B — Post-Test</h3><p>Open the booklet and print to PDF.</p></a>
+    <a class="card" href="guides/administration.html"><h3>Administration guide</h3><p>Timing, scripts, accommodations, scoring.</p></a>
+  </div>
+  <p class="lede" style="margin-top:22px">If you followed a link from somewhere else, note that addresses here are
+  case-sensitive.</p>
+</section>
+"""
+    nf_mast = """<header class="mast"><div class="wrap">
+<p class="eyebrow">Grade 7 English Language Arts</p>
+<h1>404</h1>
+<p>The page you asked for isn't here.</p>
+</div></header>"""
+    (ROOT / "404.html").write_text(
+        shell("index.html", "Page not found · Grade 7 ELA Pre/Post", nf_body, nf_mast),
+        encoding="utf-8")
+    made.append("404.html")
+
     print(f"Built {len(made)} pages:")
     for m in made:
         size = (ROOT / m).stat().st_size
