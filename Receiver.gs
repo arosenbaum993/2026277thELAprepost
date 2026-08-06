@@ -27,11 +27,37 @@
  * A rubric score is your judgment, not the computer's.
  */
 
+/**
+ * Leave this EMPTY if you pasted this script inside the spreadsheet itself
+ * (Extensions ▸ Apps Script from the sheet). It then finds your spreadsheet
+ * automatically and no ID is needed.
+ *
+ * Only fill it in if you made a STANDALONE script project instead, in which
+ * case getActiveSpreadsheet() returns null and the script cannot find the
+ * sheet. Paste the long id from your spreadsheet's address bar:
+ *   docs.google.com/spreadsheets/d/THIS_PART/edit
+ *
+ * Note: this file lives in a public repository. Adding your id here and
+ * committing it would publish which document holds your student data, so
+ * prefer the container-bound route above and leave this blank.
+ */
+var SPREADSHEET_ID = '';
+
 var ROSTER = 'Roster';
 var PRE    = 'Pre-Test Entry';
 var POST   = 'Post-Test Entry';
 var RAW    = 'Submissions (raw)';
 var ESSAYS = 'Essays';
+
+/** The spreadsheet this script writes to, whichever way it was installed. */
+function book_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss) return ss;
+  if (SPREADSHEET_ID) return SpreadsheetApp.openById(SPREADSHEET_ID);
+  throw new Error(
+    'No spreadsheet found. Paste this script into the spreadsheet itself ' +
+    '(Extensions > Apps Script), or set SPREADSHEET_ID at the top of this file.');
+}
 
 var FIRST_ROW      = 6;   // first student row on every sheet
 var FIRST_ITEM_COL = 3;   // column C holds item 1
@@ -47,7 +73,7 @@ function doPost(e) {
   try {
     var body = (e && e.postData && e.postData.contents) || '';
     var d = JSON.parse(body);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = book_();
 
     logRaw_(ss, body, d);                       // safety net first
 
@@ -59,7 +85,7 @@ function doPost(e) {
     return reply_({ok: true, row: row, sheet: target});
   } catch (err) {
     try {
-      SpreadsheetApp.getActiveSpreadsheet()
+      book_()
         .getSheetByName(RAW)
         .appendRow([new Date(), 'ERROR', err.message, (e && e.postData) ? e.postData.contents : '']);
     } catch (ignored) {}
